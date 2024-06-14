@@ -31,33 +31,53 @@ char message[BUF_SIZE] = "Spotify track info";
 
 /* MQTT library definitions: */
 WiFiClient net;
-MQTTClient mqtt;
+MQTTClient mqttClient;
 IPAddress mqttBroker(192,168,10,111);
 
 void setup()
-{
-  int num_attempt_connections = 0;
-  
+{  
   Serial.begin(115200);
   Serial.println();
 
-  mqtt.begin(mqttBroker, net);
-  mqtt.onMessage(message_received);
+  mqttClient.begin(mqttBroker, net);
+  mqttClient.onMessage(message_received);
   led_matrix.begin();
 
+  connect_wifi_network();
+
+  connect_mqtt_broker();
+  
+  led_matrix.displayText(message, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+}
+
+void loop()
+{
+  mqttClient.loop();
+  //delay(10);
+  
+  if (led_matrix.displayAnimate())
+  {
+    led_matrix.displayReset();
+  }
+}
+
+void connect_wifi_network()
+{
+  int numAttempts = 0;
+  
   if (WiFi.SSID() != "")
   {
     Serial.print("Attempting connection to WiFi network: ");
     Serial.println(WiFi.SSID().c_str());
     WiFi.begin(WiFi.SSID().c_str(), WiFi.psk().c_str());
 
-    while(num_attempt_connections < WL_MAX_ATTEMPT_CONNECTION)
+    while(numAttempts < WL_MAX_ATTEMPT_CONNECTION)
     {
       if (WiFi.status() != WL_CONNECTED)
       {
         delay(500);
         Serial.print(".");
-        num_attempt_connections++;
+        numAttempts++;
       }
       else
       {
@@ -65,7 +85,7 @@ void setup()
       }
     }
 
-    if (num_attempt_connections >= WL_MAX_ATTEMPT_CONNECTION)
+    if (numAttempts >= WL_MAX_ATTEMPT_CONNECTION)
     {
       Serial.println("Connection failed.");
       led_matrix.print("WiFi!");
@@ -81,18 +101,6 @@ void setup()
   Serial.println("Connected.");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-
-  connect_mqtt_broker();
-  
-  led_matrix.displayText(message, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
-}
-
-void loop()
-{
-  if (led_matrix.displayAnimate())
-  {
-    led_matrix.displayReset();
-  }
 }
 
 void smartconfig_connect_ap()
@@ -129,7 +137,7 @@ void connect_mqtt_broker()
   
   while (numAttempts < 10)
   {
-    if (mqtt.connect("esp8266-spotifysub") == false)
+    if (mqttClient.connect("esp8266-spotifysub") == false)
     {
       Serial.print(".");
       numAttempts++;
@@ -149,9 +157,7 @@ void connect_mqtt_broker()
   }
   else
   {
-    Serial.println("");
-    Serial.print("Connected to broker: ");
-    Serial.println(mqttBroker.toString());
+    Serial.println("Connected to broker: " + mqttBroker.toString());
   }
 }
 

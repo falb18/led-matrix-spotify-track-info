@@ -1,6 +1,7 @@
-#include "ESP8266WiFi.h"
+#include <ESP8266WiFi.h>
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
+#include <MQTT.h>
 #include <SPI.h>
 
 // Define the number of devices we have in the chain and the hardware interface
@@ -28,17 +29,25 @@ uint16_t scrollPause = 2000; // in milliseconds
 #define BUF_SIZE  75
 char message[BUF_SIZE] = "Spotify track info";
 
+/* MQTT library definitions: */
+WiFiClient net;
+MQTTClient mqtt;
+IPAddress mqttBroker(192,168,10,111);
+
 void setup()
 {
   int num_attempt_connections = 0;
   
-  led_matrix.begin();
   Serial.begin(115200);
   Serial.println();
 
+  mqtt.begin(mqttBroker, net);
+  mqtt.onMessage(message_received);
+  led_matrix.begin();
+
   if (WiFi.SSID() != "")
   {
-    Serial.print("Attempting connection to: ");
+    Serial.print("Attempting connection to WiFi network: ");
     Serial.println(WiFi.SSID().c_str());
     WiFi.begin(WiFi.SSID().c_str(), WiFi.psk().c_str());
 
@@ -69,9 +78,11 @@ void setup()
   }
 
   Serial.println();
-  Serial.println("WiFi Connected.");
-  Serial.print("IP Address: ");
+  Serial.println("Connected.");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+
+  connect_mqtt_broker();
   
   led_matrix.displayText(message, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
 }
@@ -108,4 +119,43 @@ void smartconfig_connect_ap()
     Serial.print(".");
   }
   
+}
+
+void connect_mqtt_broker()
+{
+  int numAttempts = 0;
+  
+  Serial.println("Connecting to MQTT broker");
+  
+  while (numAttempts < 10)
+  {
+    if (mqtt.connect("esp8266-spotifysub") == false)
+    {
+      Serial.print(".");
+      numAttempts++;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  if (numAttempts >= 10)
+  {
+    Serial.println("");
+    Serial.println("Connection to broker failed");
+    led_matrix.print("Track!");
+    delay(5000);
+  }
+  else
+  {
+    Serial.println("");
+    Serial.print("Connected to broker: ");
+    Serial.println(mqttBroker.toString());
+  }
+}
+
+void message_received(String &topic, String &payload)
+{
+  return;
 }

@@ -2,6 +2,7 @@
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
 #include <MQTT.h>
+#include <NoDelay.h>
 #include <SPI.h>
 
 // Define the number of devices we have in the chain and the hardware interface
@@ -23,7 +24,7 @@ MD_Parola led_matrix = MD_Parola(HARDWARE_TYPE, D7, D5, D8, MAX_DEVICES);
 uint8_t scrollSpeed = 25;    // default frame delay value
 textEffect_t scrollEffect = PA_SCROLL_LEFT;
 textPosition_t scrollAlign = PA_LEFT;
-uint16_t scrollPause = 2000; // in milliseconds
+uint16_t scrollPause = 0; // in milliseconds
 
 // Global message buffers shared by Serial and Scrolling functions
 #define BUF_SIZE  128
@@ -43,6 +44,12 @@ String strTitle = "";
 String strAlbum = "";
 String strArtist = "";
 
+/* noDelay variables: */
+noDelay delayText(1000); // Delay between messages displayed on the LED matrix
+
+/* Program variables: */
+bool runTextAnimation = true;
+
 void setup()
 {  
   Serial.begin(115200);
@@ -57,16 +64,27 @@ void setup()
   connect_mqtt_broker();
   
   led_matrix.displayText(trackInfo, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+  delayText.stop();
 }
 
 void loop()
 {
   mqttClient.loop();
   
-  if (led_matrix.displayAnimate())
+  if (runTextAnimation == true)
   {
-    led_matrix.displayReset();
-    update_track_info();
+    if (led_matrix.displayAnimate() == true)
+    {
+      led_matrix.displayReset();
+      update_track_info();
+      runTextAnimation = false;
+      delayText.start();
+    }
+  }
+  else if (delayText.update() == true)
+  {
+    delayText.stop();
+    runTextAnimation = true;
   }
 }
 

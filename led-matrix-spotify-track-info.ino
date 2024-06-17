@@ -66,7 +66,7 @@ void loop()
   if (led_matrix.displayAnimate())
   {
     led_matrix.displayReset();
-    Serial.println(strTitle + " - " + strArtist + " - " + strAlbum);
+    update_track_info();
   }
 }
 
@@ -187,4 +187,10 @@ void message_received(String &topic, String &payload)
   {
     strArtist = payload;
   }
+}
+
+void update_track_info(void)
+{
+  sprintf(trackInfo, "%s - %s - %s", strTitle.c_str(), strArtist.c_str(), strAlbum.c_str());
+  led_matrix.displayText(trackInfo, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
 }

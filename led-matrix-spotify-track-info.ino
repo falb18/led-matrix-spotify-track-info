@@ -26,13 +26,22 @@ textPosition_t scrollAlign = PA_LEFT;
 uint16_t scrollPause = 2000; // in milliseconds
 
 // Global message buffers shared by Serial and Scrolling functions
-#define BUF_SIZE  75
-char message[BUF_SIZE] = "Spotify track info";
+#define BUF_SIZE  128
+char trackInfo[BUF_SIZE] = "Spotify track info";
 
 /* MQTT library definitions: */
 WiFiClient net;
 MQTTClient mqttClient;
 IPAddress mqttBroker(192,168,10,111);
+
+/* Spotify variables: */
+String titleTopic = "spotify/metadata/title";
+String albumTopic = "spotify/metadata/album";
+String artistTopic = "spotify/metadata/artist";
+
+String strTitle = "";
+String strAlbum = "";
+String strArtist = "";
 
 void setup()
 {  
@@ -47,17 +56,17 @@ void setup()
 
   connect_mqtt_broker();
   
-  led_matrix.displayText(message, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+  led_matrix.displayText(trackInfo, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
 }
 
 void loop()
 {
   mqttClient.loop();
-  //delay(10);
   
   if (led_matrix.displayAnimate())
   {
     led_matrix.displayReset();
+    Serial.println(strTitle + " - " + strArtist + " - " + strAlbum);
   }
 }
 
@@ -158,10 +167,24 @@ void connect_mqtt_broker()
   else
   {
     Serial.println("Connected to broker: " + mqttBroker.toString());
+    mqttClient.subscribe(titleTopic);
+    mqttClient.subscribe(albumTopic);
+    mqttClient.subscribe(artistTopic);
   }
 }
 
 void message_received(String &topic, String &payload)
 {
-  return;
+  if (topic.equals(titleTopic) == true)
+  {
+    strTitle = payload;
+  }
+  else if (topic.equals(albumTopic) == true)
+  {
+    strAlbum = payload;
+  }
+  else if (topic.equals(artistTopic) == true)
+  {
+    strArtist = payload;
+  }
 }

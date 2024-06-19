@@ -32,3 +32,8 @@ In the Arduino code modify the broker's IP:
 ```arduino
 IPAddress mqttBroker(xxx,xxx,xxx,xxx);
 ```
+
+## Flowchart diagram of the program
+
+This diagram illustrates the logic of the program:
+<img src="./imgs/led-matrix-spotify-drawio.png" width="" height="">

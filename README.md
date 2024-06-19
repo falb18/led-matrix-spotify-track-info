@@ -2,7 +2,7 @@
 
 This project displays the current track played on Spotify on a LED matrix.
 The device gets the track information from the topics published by the program [spotify-mqtt-publisher](https://github.com/falb18/spotify-mqtt-publisher).
-It is only displayed the **title of the song**, the **name of the artist** and the **name of the album**.
+The led matrix displays the **title of the song**, the **name of the artist** and the **name of the album**.
 
 The project uses the following Arduino libraries:
 - [MD_Parola v3.7.3](https://github.com/MajicDesigns/MD_Parola)
@@ -13,21 +13,20 @@ The project uses the following Arduino libraries:
 The following projects were useful to develop this project:
 - [ESP8266_WiFiSmartConfig](https://github.com/usemodj/ESP8266_WiFiSmartConfig)
 
-## Setup the network
+## Set network credentials
 
 You need to install the [ESPTouch](https://github.com/EspressifApp/EsptouchForAndroid) app on your smarphone to connect
-the device to the WiFi network.
+the device to a WiFi network.
 
-The first time the device waits for the WiFi credentials. Once it has established a connection, the next time after the
-reset it will try 10 times to connect to the same WiFi network. In case it fails to connect, then it will wait for the
-WiFi credentials.
+After the initial connection, it remembers the network credentials. If reset, it will attempt to rejoin the same network
+automatically for up to 10 times. If unsuccessful, it enters to smartconfig mode where you can provide new credentials.
 
-If the problem has to be with the WiFi network, then after solving the issue just reset the device and it will successfully
-connect to the network.
+If you encounter any Wi-Fi network issues, simply reset the device. As long as the network settings are correct, it will
+automatically reconnect after the reset.
 
-## Setup the MQTT broker
+## Set MQTT broker
 
-You have to setup a MQTT broker. You can run it on your PC or in an external microcomputer like a Raspberry Pi.
+You will need an MQTT broker. You can set it up on your computer, or even on a small device like a Raspberry Pi.
 
 In the Arduino code modify the broker's IP:
 ```arduino

@@ -4,6 +4,8 @@ This project displays the current track played on Spotify on a LED matrix.
 The device gets the track information from the topics published by the program [spotify-mqtt-publisher](https://github.com/falb18/spotify-mqtt-publisher).
 The led matrix displays the **title of the song**, the **name of the artist** and the **name of the album**.
 
+<img src="./imgs/led-matrix-spotify-track.jpg" width="512" height="">
+
 The project uses the following Arduino libraries:
 - [MD_Parola v3.7.3](https://github.com/MajicDesigns/MD_Parola)
 - [MD_MAX72XX v3.5.1](https://github.com/MajicDesigns/MD_MAX72xx)
